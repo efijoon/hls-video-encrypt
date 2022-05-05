@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <link href="https://vjs.zencdn.net/7.8.2/video-js.css" rel="stylesheet">
+</head>
+
+<body>
+  <video id="example-video" width="1280" height="720" class="video-js vjs-default-skin" controls autoplay>
+    <source src="/dist/encrypted/master.m3u8" type="application/x-mpegURL" />
+  </video>
+
+  <script src="https://vjs.zencdn.net/7.8.2/video.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-quality-levels@2.0.9/dist/videojs-contrib-quality-levels.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/videojs-hls-quality-selector@1.1.1/dist/videojs-hls-quality-selector.min.js"></script>
+  <script src="https://cdn.streamroot.io/videojs-hlsjs-plugin/1/stable/videojs-hlsjs-plugin.js"></script>
+  <script>
+    const player = videojs('example-video', {
+      html5: {
+        hlsjsConfig: {
+          // Put your hls.js config here
+        },
+      }
+    });
+
+    player.hlsQualitySelector({
+      displayCurrentQuality: true,
+    });
+  </script>
+</body>
+
+</html>
