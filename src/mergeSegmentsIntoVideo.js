@@ -1,19 +1,25 @@
 const path = require('path');
-const { execSync } = require('child_process');
+const fluentFfmpeg = require('fluent-ffmpeg');
 
-const distPath = path.join(__dirname, '..', 'dist');
-
-async function mergeSegmentsIntoVideo(resolution) {
+async function mergeSegmentsIntoVideo(resolution, distPath) {
   const playlistPath = path.join(distPath, resolution, 'playlist.m3u8');
   const joinedVideoPath = path.join(distPath, 'merged', `${resolution}.mp4`);
 
-  const joinSegmentsArgs = [
-    `-i ${playlistPath}`,
-    `-codec copy`,
-    joinedVideoPath
-  ].join(' ');
-
-  execSync(`ffmpeg ${joinSegmentsArgs}`);
+  return new Promise((resolve, reject) => {
+    fluentFfmpeg(playlistPath)
+      .outputOptions([`-codec copy`])
+      .output(joinedVideoPath)
+      .on('progress', (progress) => {
+        console.log('Merge segments into video:', progress.percent, '% done');
+      })
+      .once('end', async () => {
+        resolve()
+      })
+      .once('error', err => {
+        reject(err);
+      })
+      .run();
+  });
 };
 
 module.exports = mergeSegmentsIntoVideo;

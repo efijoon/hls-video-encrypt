@@ -13,20 +13,19 @@ const inputPath = path.join(__dirname, '..', 'video.mp4');
 const distPath = path.join(__dirname, '..', 'dist');
 
 const main = async () => {
-  const info = await getVideoInformation(inputPath);
-  const has720Resolution = info.streams.some(stream => {
-    return stream.width === 1280 && stream.height === 720;
-  });
+  // const info = await getVideoInformation(inputPath);
+  // const has720Resolution = info.streams.some(stream => {
+  //   return stream.width === 1280 && stream.height === 720;
+  // });
 
-  if (!has720Resolution) {
-    throw new Error('Incorrect video resolution, please use 1280x720.');
-  }
+  // if (!has720Resolution)
+  //   throw new Error('Incorrect video resolution, please use 1280x720.');
 
-  const numberOfChunks = await createSegmentsFromOriginalVideo(inputPath);
+  const numberOfChunks = await createSegmentsFromOriginalVideo(inputPath, distPath);
 
   const meregedPath = path.join(distPath, 'merged');
   if(fs.existsSync(meregedPath))
-    fs.rmdirSync(meregedPath, { recursive: true, force: true });
+    fs.rmSync(meregedPath, { recursive: true, force: true });
 
   await fs.promises.mkdir(meregedPath);
 
@@ -35,13 +34,15 @@ const main = async () => {
     const destinationPath = path.join(distPath, resolution);
 
     if(fs.existsSync(destinationPath))
-      fs.rmdirSync(destinationPath, { recursive: true, force: true });
+      fs.rmSync(destinationPath, { recursive: true, force: true });
     
     await fs.promises.mkdir(destinationPath);
+
     for (let i = 0; i < numberOfChunks; i++) {
       const convertSegmentPromise = convertSegmentToCustomResolution(
         `chunk${String(i).padStart(5, '0')}.ts`,
-        resolution
+        resolution,
+        distPath
       );
 
       convertSegmentsPromises.push(convertSegmentPromise)
@@ -56,17 +57,23 @@ const main = async () => {
 
     const encryptPath = path.join(distPath, 'encrypted', resolution);
     if(fs.existsSync(encryptPath))
-      fs.rmdirSync(encryptPath, { recursive: true, force: true });
+      fs.rmSync(encryptPath, { recursive: true, force: true });
     
     await fs.promises.mkdir(encryptPath, { 
       recursive: true 
     });
 
-    await generateEncryptionKey(resolution);
-    await mergeSegmentsIntoVideo(resolution);
-    await generateEncryptedSegments(resolution);
+    await generateEncryptionKey(resolution, 'http://localhost:5001/dist/encrypted', distPath);
+    await mergeSegmentsIntoVideo(resolution, distPath);
+    await generateEncryptedSegments(resolution, distPath);
 
-    console.timeEnd(`${resolution}p`);
+console.info(`
+===================================================================================
+
+    Encrypted video with the resolution of ${resolution}p was generated!
+
+===================================================================================
+`);
   }));
 
   await createMasterPlaylist();

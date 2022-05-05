@@ -1,9 +1,8 @@
 const path = require('path');
 const { execSync } = require('child_process');
+const fluentFfmpeg = require('fluent-ffmpeg');
 
-const distPath = path.join(__dirname, '..', 'dist');
-
-async function generateEncryptedSegments(resolution) {
+async function generateEncryptedSegments(resolution, distPath) {
   const encryptedResolutionPath = path.join(distPath, 'encrypted', resolution);
 
   const inputPath = path.join(distPath, 'merged', `${resolution}.mp4`);
@@ -11,18 +10,28 @@ async function generateEncryptedSegments(resolution) {
   const playlistName = path.join(encryptedResolutionPath, 'playlist.m3u8');
   const encryptionKeyInfoPath = path.join(encryptedResolutionPath, 'encryption.keyinfo');
   
-  const createSegmentsArgs = [
-    `-i ${inputPath}`, 
-    '-vcodec copy',
-    '-acodec copy',
-    '-muxdelay 0',
-    '-hls_playlist_type vod',
-    `-hls_key_info_file ${encryptionKeyInfoPath}`,
-    `-hls_segment_filename ${segmentPath}`,
-    playlistName,
-  ].join(' ');
-
-  execSync(`ffmpeg ${createSegmentsArgs}`);
+  return new Promise((resolve, reject) => {
+    fluentFfmpeg(inputPath)
+      .outputOptions([
+        '-vcodec copy',
+        '-acodec copy',
+        '-muxdelay 0',
+        '-hls_playlist_type vod',
+        `-hls_key_info_file ${encryptionKeyInfoPath}`,
+        `-hls_segment_filename ${segmentPath}`,
+      ])
+      .output(playlistName)
+      .on('progress', (progress) => {
+        console.log('Generate Encrypted Segments:', progress.percent, '% done');
+      })
+      .once('end', async () => {
+        resolve()
+      })
+      .once('error', err => {
+        reject(err);
+      })
+      .run();
+  });
 }
 
 module.exports = generateEncryptedSegments;
