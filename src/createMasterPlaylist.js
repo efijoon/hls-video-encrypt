@@ -6,7 +6,7 @@ const distPath = path.join(__dirname, "..", "dist");
 
 const { MasterPlaylist, Variant } = HLS.types;
 
-const resolutions = ["640x480"];
+const resolutions = ["848x480"];
 
 async function createMasterPlaylist() {
   const variants = resolutions.map((resolution) => {

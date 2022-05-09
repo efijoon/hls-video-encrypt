@@ -1,11 +1,9 @@
 const path = require('path');
-const { execSync } = require('child_process');
 const fluentFfmpeg = require('fluent-ffmpeg');
 
-async function generateEncryptedSegments(resolution, distPath) {
+async function generateEncryptedSegments(resolution, inputPath, distPath) {
   const encryptedResolutionPath = path.join(distPath, 'encrypted', resolution);
 
-  const inputPath = path.join(distPath, 'merged', `${resolution}.mp4`);
   const segmentPath = path.join(encryptedResolutionPath, 'chunk%05d.ts');
   const playlistName = path.join(encryptedResolutionPath, 'playlist.m3u8');
   const encryptionKeyInfoPath = path.join(encryptedResolutionPath, 'encryption.keyinfo');

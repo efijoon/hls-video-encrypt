@@ -9,12 +9,12 @@ const crypto = require("crypto");
 async function generateEncryptionKey(
   resolution,
   domain = "http://localhost:5001/dist/encrypted",
-  keyPath = path.join(__dirname, "..", "dist")
+  distPath = path.join(__dirname, "..", "dist")
 ) {
   const key = crypto.randomBytes(16).toString("hex");
   const iv = crypto.randomBytes(16).toString("hex");
   const encryptionKeyFilePath = path.join(
-    keyPath,
+    distPath,
     "encrypted",
     resolution,
     "encryption.key"
@@ -24,16 +24,16 @@ async function generateEncryptionKey(
 
   const encryptionKeyInfo = [
       `${domain}/${resolution}/encryption.key`,
-      path.resolve(keyPath, "encrypted", resolution, "encryption.key"),
+      path.resolve(distPath, "encrypted", resolution, "encryption.key"),
       iv,
     ].join("\n");
     
   const keyInfoFilePath = path.join(
-      keyPath,
-      "encrypted",
-      resolution,
-      "encryption.keyinfo"
-    );
+    distPath,
+    "encrypted",
+    resolution,
+    "encryption.keyinfo"
+  );
 
   await fs.promises.writeFile(keyInfoFilePath, encryptionKeyInfo);
 }

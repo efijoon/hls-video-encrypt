@@ -3,3 +3,4 @@ dist/*
 tmp/*
 !tmp/.gitkeep
 node_modules/
+video.mp4
